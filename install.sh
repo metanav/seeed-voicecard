@@ -9,19 +9,19 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Check for enough space on /boot volume
-boot_line=$(df -h | grep /boot | head -n 1)
+boot_line=$(df -h | grep /mnt/boot | head -n 1)
 if [ "x${boot_line}" = "x" ]; then
-  echo "Warning: /boot volume not found .."
+  echo "Warning: /mnt/boot volume not found .."
 else
   boot_space=$(echo $boot_line | awk '{print $4;}')
   free_space=$(echo "${boot_space%?}")
   unit="${boot_space: -1}"
   if [[ "$unit" = "K" ]]; then
-    echo "Error: Not enough space left ($boot_space) on /boot"
+    echo "Error: Not enough space left ($boot_space) on /mnt/boot"
     exit 1
   elif [[ "$unit" = "M" ]]; then
     if [ "$free_space" -lt "25" ]; then
-      echo "Error: Not enough space left ($boot_space) on /boot"
+      echo "Error: Not enough space left ($boot_space) on /mnt/boot"
       exit 1
     fi
   fi
@@ -34,8 +34,8 @@ fi
 # - check for /boot/overlays
 # - dtparam and dtoverlay is available
 errorFound=0
-if [ ! -d /boot/overlays ] ; then
-  echo "/boot/overlays not found or not a directory" 1>&2
+if [ ! -d /mnt/boot/overlays ] ; then
+  echo "/mnt/boot/overlays not found or not a directory" 1>&2
   errorFound=1
 fi
 # should we also check for alsactl and amixer used in seeed-voicecard?
@@ -63,7 +63,7 @@ function get_kernel_version() {
 
   _VER_RUN=""
   [ -z "$_VER_RUN" ] && {
-    ZIMAGE=/boot/kernel.img
+    ZIMAGE=/mnt/boot/kernel.img
     IMG_OFFSET=$(LC_ALL=C grep -abo $'\x1f\x8b\x08\x00' $ZIMAGE | head -n 1 | cut -d ':' -f 1)
     _VER_RUN=$(dd if=$ZIMAGE obs=64K ibs=4 skip=$(( IMG_OFFSET / 4)) | zcat | grep -a -m1 "Linux version" | strings | awk '{ print $3; }')
   }
